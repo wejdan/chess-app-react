@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { Context } from "../contexts/Context";
+import { OnlineContext } from "../contexts/OnlineGameContext";
 import { WIDTH } from "../utils/constants";
 import IconButton from "./IconButton";
 
@@ -8,38 +10,32 @@ const Wrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
-  width: ${(props) => `${props.width}px`};
   height: 50px;
   background-color: black;
   color: #fff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 `;
 function TopBar() {
-  const {
-    isCheckMate,
-    turn,
-    goBack,
-    isGameOver,
-    init,
-    goForward,
-    forward,
-    history,
-    total,
-  } = useContext(Context);
+  const game = useSelector((state) => state.game);
+  const room = useSelector((state) => state.room);
+
   return (
     <Wrapper width={WIDTH} style={{ pointerEvents: "none" }}>
       <div
         style={{ fontWeight: "bold", fontSize: "20px" }}
-      >{`${total}-Turn: ${turn} `}</div>
+      >{`Turn: ${game.turn} `}</div>
 
       <p
         style={{
           color: "white",
           fontSize: 30,
           fontVariant: ["tabular-nums"],
-          opacity: isCheckMate ? 1 : 0,
         }}
       >
-        CHEECK MATE
+        {`You'r Team is ${room.color}`}
       </p>
     </Wrapper>
   );

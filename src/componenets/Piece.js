@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
-import { Context } from "../contexts/Context";
 import { HEIGHT, SIZE, WIDTH, width } from "../utils/constants";
-import { calculateMovs } from "../utils/movesCalculation";
 const Wrapper = styled.div`
   position: absolute;
 
@@ -17,23 +16,24 @@ const Wrapper = styled.div`
 `;
 
 function Piece({ index, chessboardRef, player }) {
-  const { board, turn, active } = useContext(Context);
+  const game = useSelector((state) => state.game);
+
   const [opacity, setOpacity] = useState(1);
 
   let x =
     chessboardRef &&
-    board[index]?.pos.split("*")[1] * SIZE + chessboardRef.offsetLeft;
+    game.board[index].pos.split("*")[1] * SIZE + chessboardRef.offsetLeft;
   let y =
     chessboardRef &&
-    board[index]?.pos.split("*")[0] * SIZE + chessboardRef.offsetTop;
-
+    game.board[index].pos.split("*")[0] * SIZE + chessboardRef.offsetTop;
+  useEffect(() => {}, []);
   useEffect(() => {
-    if (board[index].isDeleted) {
+    if (game.board[index].isDeleted) {
       setOpacity(0);
-    } else if (board[index].isDeleted == false && opacity == 0) {
+    } else if (game.board[index].isDeleted == false && opacity == 0) {
       setOpacity(1);
     }
-  }, [board]);
+  }, [game.board]);
 
   return (
     <Wrapper
@@ -42,7 +42,7 @@ function Piece({ index, chessboardRef, player }) {
       className="piece"
       style={{
         pointerEvents: opacity == 0 ? "none" : "auto",
-        backgroundImage: `url(${board[index].img})`,
+        backgroundImage: `url(${game.board[index].img})`,
         top: y,
         left: x,
       }}
@@ -52,8 +52,8 @@ function Piece({ index, chessboardRef, player }) {
       width={SIZE}
       x={x}
       y={y}
-      isActive={active == index}
-      isMyTurn={turn == player}
+      isActive={game.activeIndex == index}
+      isMyTurn={game.turn == player}
     ></Wrapper>
   );
 }

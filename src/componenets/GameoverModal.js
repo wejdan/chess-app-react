@@ -1,69 +1,164 @@
 import React, { useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { Context } from "../contexts/Context";
-const Box = styled.div`
-  background-color: #f8f8f8;
-  border-radius: 15px;
+import { OnlineContext } from "../contexts/OnlineGameContext";
+import { reset, resetStateForRematch } from "../store/gameSlice";
+import { Button, Header, Icon, Modal } from "semantic-ui-react";
+import { useNavigate } from "react-router-dom";
+import {
+  acceptRematch,
+  deleteRoom,
+  rejectRematch,
+  requestRematch,
+} from "../utils/chessOnline";
+import { resetRoom } from "../store/roomSlice";
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  width: 400px;
-`;
-const Wrapper = styled.div`
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-function GameoverModal() {
-  const { init, winner } = useContext(Context);
+function GameoverModal({
+  isRematchRequsted,
+  rematchRequstStatus,
+  isOpponentOnline,
+  opponent,
+}) {
+  const game = useSelector((state) => state.game);
+  const room = useSelector((state) => state.room);
 
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
   return (
-    <Wrapper>
-      <Box>
-        <h2
-          style={{
-            fontSize: 30,
-            fontWeight: "bold",
-            marginBottom: 20,
-            pointerEvents: "none",
-          }}
-        >
-          {winner.charAt(0).toUpperCase() + winner.slice(1)} Wins
-        </h2>
-        <div
-          onClick={() => {
-            init();
-          }}
-          style={{
-            backgroundColor: "#AACB73",
-            borderRadius: "12px",
-            width: "40%",
-            height: 50,
-            cursor: "pointer",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              color: "white",
-              fontSize: 22,
-              fontWeight: 700,
+    <>
+      <Modal basic open={!isOpponentOnline} size="small">
+        <Header icon>{`${opponent.name} Has Left The Game`}</Header>
+        <Modal.Content>
+          <h4 style={{ textAlign: "center" }}>
+            You Can Create A new Game Or Join Other Friends
+          </h4>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button
+            color="green"
+            inverted
+            onClick={() => {
+              dispatch(resetRoom());
+
+              dispatch(reset());
+              deleteRoom(room.roomID);
+              navigate("/", { replace: true });
             }}
           >
-            New Game
-          </span>
-        </div>
-      </Box>
-    </Wrapper>
+            <Icon name="checkmark" /> Go To Home
+          </Button>
+        </Modal.Actions>
+      </Modal>
+      <Modal
+        basic
+        open={game.end.isGameEnded && rematchRequstStatus}
+        size="small"
+      >
+        <Header icon>Game Is Over</Header>
+        <Modal.Content>
+          <h4 style={{ textAlign: "center" }}>
+            {rematchRequstStatus == "waiting"
+              ? "Wating For Your Opponent Response"
+              : "Your Opponent Dose Not Want To Play Another Game You Can Create A new Game Or Join Other Friends"}
+          </h4>
+        </Modal.Content>
+        {rematchRequstStatus == "rejected" && (
+          <Modal.Actions>
+            <Button
+              color="green"
+              inverted
+              onClick={() => {
+                dispatch(resetRoom());
+
+                dispatch(reset());
+                deleteRoom(room.roomID);
+
+                navigate("/", { replace: true });
+              }}
+            >
+              <Icon name="checkmark" /> Go To Home
+            </Button>
+          </Modal.Actions>
+        )}
+      </Modal>
+      <Modal
+        basic
+        open={game.end.isGameEnded && isRematchRequsted}
+        size="small"
+      >
+        <Header icon>Game Is Over</Header>
+        <Modal.Content>
+          <h3 style={{ textAlign: "center" }}>
+            {`${isRematchRequsted} Want To Play Another Game Do You Want To join? `}
+          </h3>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button
+            basic
+            color="red"
+            inverted
+            onClick={() => {
+              rejectRematch(room.roomID);
+              dispatch(resetRoom());
+              dispatch(reset());
+              navigate("/", { replace: true });
+            }}
+          >
+            <Icon name="remove" /> No
+          </Button>
+          <Button
+            color="green"
+            inverted
+            onClick={() => {
+              acceptRematch(room.roomID);
+              dispatch(reset());
+            }}
+          >
+            <Icon name="checkmark" /> Yes
+          </Button>
+        </Modal.Actions>
+      </Modal>
+      <Modal
+        basic
+        open={
+          game.end.isGameEnded && !isRematchRequsted && !rematchRequstStatus
+        }
+        size="small"
+      >
+        <Header icon>Game Is Over</Header>
+        <Modal.Content>
+          <h3 style={{ textAlign: "center" }}>
+            Do You Want To Play Another Game?
+          </h3>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button
+            basic
+            color="red"
+            inverted
+            onClick={() => {
+              dispatch(resetRoom());
+              dispatch(reset());
+              navigate("/", { replace: true });
+            }}
+          >
+            <Icon name="remove" /> No
+          </Button>
+          <Button
+            color="green"
+            inverted
+            onClick={() => {
+              requestRematch(room.color, room.roomID);
+              //  dispatch(reset());
+            }}
+          >
+            <Icon name="checkmark" /> Yes
+          </Button>
+        </Modal.Actions>
+      </Modal>
+    </>
   );
 }
 

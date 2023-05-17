@@ -1,15 +1,16 @@
 import React, { useContext } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { Context } from "../contexts/Context";
+import { OnlineContext } from "../contexts/OnlineGameContext";
 import { HEIGHT, SIZE, WIDTH, width } from "../utils/constants";
-import { calculateMovs } from "../utils/movesCalculation";
 
 function PossibleMoves({ chessboardRef }) {
-  const { movs, attacks } = useContext(Context);
-
+  // const { movs, attacks } = useContext(Context);
+  const game = useSelector((state) => state.game);
   return (
     <>
-      {movs.map((m, j) => {
+      {game.possibleMoves.map((m, j) => {
         const [row, col] = m.split("*");
         if (Number(row) > 7 || Number(col) > 7) {
           return;
@@ -17,7 +18,7 @@ function PossibleMoves({ chessboardRef }) {
         if (Number(row) < 0 || Number(col) < 0) {
           return;
         }
-        const isAttack = attacks.includes(m);
+        const isAttack = game.validAttacks.includes(m);
         return (
           <div
             key={m}

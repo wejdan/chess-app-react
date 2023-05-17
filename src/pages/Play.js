@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import styled from "styled-components";
 import Chessborad from "../componenets/Chessborad";
 import Piece from "../componenets/Piece";
@@ -115,7 +121,7 @@ function Play() {
     setTotal(total + 1);
   };
   const onGrabPiece = (e) => {
-    if (e.target.classList.contains("piece") && chessboardRef.current) {
+    if (e.target.classList.contains("piece") && chessboardRef) {
       const { index, player } = e.target.dataset;
       if (turn == player) {
         const activeIndex = Number(index);
@@ -137,31 +143,6 @@ function Play() {
           board[activeIndex]
         );
         if (board[activeIndex].type == "king" && !board[activeIndex].moved) {
-          // const left1 = isTileEmpty(row, col - 1, board);
-          // const left2 = isTileEmpty(row, col - 2, board);
-          // const left3 = isTileEmpty(row, col - 3, board);
-
-          // const right1 = isTileEmpty(row, col + 1, board);
-          // const right2 = isTileEmpty(row, col + 2, board);
-
-          // if (left1 && left2 && left3) {
-          //   const isRockMoved = board[activeIndex - 4].moved;
-          //   if (!isRockMoved) {
-          //     const castlingLeft = `${row}` + "*" + `${col - 4}`;
-
-          //     validAttacks.push(castlingLeft);
-          //     validMovs.push(castlingLeft);
-          //   }
-          // }
-          // if (right1 && right2) {
-          //   const isRockMoved = board[activeIndex + 3].moved;
-          //   if (!isRockMoved) {
-          //     const castlingRight = `${row}` + "*" + `${col + 3}`;
-
-          //     validAttacks.push(castlingRight);
-          //     validMovs.push(castlingRight);
-          //   }
-          // }
           const caslingMovs = kingCasling(
             row,
             col,
@@ -173,7 +154,6 @@ function Play() {
             validAttacks.push(m);
             validMovs.push(m);
           });
-          console.log("caslingMovs==", caslingMovs, "");
         }
         setMovs(validMovs);
         seAttacks(validAttacks);
@@ -186,29 +166,27 @@ function Play() {
     }
   };
   const onReleasePiece = (e) => {
-    if (!activePiece.current || !chessboardRef.current) return;
+    if (!activePiece.current || !chessboardRef) return;
 
     const newCol = Math.round(
-      (e.clientX - chessboardRef.current.offsetLeft - SIZE / 2) / SIZE
+      (e.clientX - chessboardRef.offsetLeft - SIZE / 2) / SIZE
     );
     const newRow = Math.round(
-      (e.clientY - chessboardRef.current.offsetTop - SIZE / 2) / SIZE
+      (e.clientY - chessboardRef.offsetTop - SIZE / 2) / SIZE
     );
 
     if (movs.includes(`${newRow}*${newCol}`)) {
-      const x = newCol * SIZE + chessboardRef.current.offsetLeft;
-      const y = newRow * SIZE + chessboardRef.current.offsetTop;
+      const x = newCol * SIZE + chessboardRef.offsetLeft;
+      const y = newRow * SIZE + chessboardRef.offsetTop;
 
       activePiece.current.style.top = `${y}px`;
       activePiece.current.style.left = `${x}px`;
       handleMovingPiece(newRow, newCol);
     } else {
       const x =
-        board[active]?.pos.split("*")[1] * SIZE +
-        chessboardRef.current.offsetLeft;
+        board[active]?.pos.split("*")[1] * SIZE + chessboardRef.offsetLeft;
       const y =
-        board[active]?.pos.split("*")[0] * SIZE +
-        chessboardRef.current.offsetTop;
+        board[active]?.pos.split("*")[0] * SIZE + chessboardRef.offsetTop;
 
       activePiece.current.style.top = `${y}px`;
       activePiece.current.style.left = `${x}px`;
@@ -219,13 +197,11 @@ function Play() {
     setMovs([]);
   };
   const onMovePiece = (e) => {
-    if (activePiece.current && chessboardRef.current) {
-      const startLeft = chessboardRef.current.offsetLeft;
-      const startTop = chessboardRef.current.offsetTop;
-      const endLeft =
-        chessboardRef.current.offsetLeft + chessboardRef.current.clientWidth;
-      const endTop =
-        chessboardRef.current.offsetTop + chessboardRef.current.clientHeight;
+    if (activePiece.current && chessboardRef) {
+      const startLeft = chessboardRef.offsetLeft;
+      const startTop = chessboardRef.offsetTop;
+      const endLeft = chessboardRef.offsetLeft + chessboardRef.clientWidth;
+      const endTop = chessboardRef.offsetTop + chessboardRef.clientHeight;
       const newY = e.clientY;
       const newX = e.clientX;
 
@@ -237,7 +213,9 @@ function Play() {
       }
     }
   };
-  const chessboardRef = useRef(null);
+
+  //const chessboardRef = useRef(null);
+  const [chessboardRef, setChessboardRef] = useState();
   return (
     <Wrapper
       onMouseMove={onMovePiece}
@@ -262,7 +240,10 @@ function Play() {
         <TopBar />
 
         <PlayContainer
-          ref={chessboardRef}
+          ref={(newRef) => {
+            console.log("ref was updated");
+            setChessboardRef(newRef);
+          }}
           width={WIDTH}
           height={HEIGHT}
           style={{ pointerEvents: isGameOver ? "none" : "auto" }}
@@ -277,7 +258,7 @@ function Play() {
                 player={p.player}
                 name={p.name}
                 index={i}
-                chessboardRef={chessboardRef.current}
+                chessboardRef={chessboardRef}
               />
             );
           })}
@@ -290,7 +271,7 @@ function Play() {
                 player="black"
                 name={"bp" + i}
                 index={8 + i}
-                chessboardRef={chessboardRef.current}
+                chessboardRef={chessboardRef}
               />
             );
           })}
@@ -303,7 +284,7 @@ function Play() {
                 player={p.player}
                 name={p.name}
                 index={i + 24}
-                chessboardRef={chessboardRef.current}
+                chessboardRef={chessboardRef}
               />
             );
           })}
@@ -315,11 +296,11 @@ function Play() {
                 player="white"
                 name={"wp" + i}
                 index={16 + i}
-                chessboardRef={chessboardRef.current}
+                chessboardRef={chessboardRef}
               />
             );
           })}
-          <PossibleMoves chessboardRef={chessboardRef.current} />
+          <PossibleMoves chessboardRef={chessboardRef} />
         </PlayContainer>
         <BottomBar />
       </div>

@@ -1,15 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Button, Header, Icon, Modal } from "semantic-ui-react";
 import { Context } from "../contexts/Context";
+import { OnlineContext } from "../contexts/OnlineGameContext";
+import { promotePawnTo } from "../store/gameSlice";
 import { black, SIZE, white } from "../utils/constants";
 function Promotion() {
-  const { isPromoation, setBoard, setIsPromoation, turn, board, active } =
-    useContext(Context);
+  const game = useSelector((state) => state.game);
+
+  const dispatch = useDispatch();
 
   const [list, setList] = useState([]);
   useEffect(() => {
-    console.log("turn", turn);
-    if (turn == "white") {
+    if (game.turn == "white") {
       setList(black);
     } else {
       setList(white);
@@ -18,8 +21,8 @@ function Promotion() {
   return (
     <Modal
       basic
-      onClose={() => setIsPromoation(false)}
-      open={isPromoation}
+      //  onClose={() => updateGame("shouldPawnPromote", false)}
+      open={game.shouldPawnPromote}
       size="small"
     >
       <Header icon>Promoto Your Pawn</Header>
@@ -38,19 +41,7 @@ function Promotion() {
               <div
                 key={i}
                 onClick={() => {
-                  //   alert(p.type);
-                  const newPositions = [...board];
-                  const current = newPositions[active];
-                  newPositions[active] = {
-                    ...current,
-                    type: p.type,
-                    img: p.img,
-
-                    moved: true,
-                  };
-                  setBoard(newPositions);
-                  //   setImg(p.img);
-                  setIsPromoation(false);
+                  dispatch(promotePawnTo({ newType: p }));
                 }}
               >
                 <img
