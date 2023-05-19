@@ -1,13 +1,13 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
-import styled from "styled-components";
-import { Context } from "../contexts/Context";
-import { OnlineContext } from "../contexts/OnlineGameContext";
-import { HEIGHT, SIZE, WIDTH, width } from "../utils/constants";
+
+import { SIZE } from "../utils/constants";
 
 function PossibleMoves({ chessboardRef }) {
   // const { movs, attacks } = useContext(Context);
   const game = useSelector((state) => state.game);
+  const room = useSelector((state) => state.room);
+
   return (
     <>
       {game.possibleMoves.map((m, j) => {
@@ -18,6 +18,9 @@ function PossibleMoves({ chessboardRef }) {
         if (Number(row) < 0 || Number(col) < 0) {
           return;
         }
+        const r = !room.isFirstPlayer ? 7 - row : row;
+        const c = !room.isFirstPlayer ? 7 - col : col;
+
         const isAttack = game.validAttacks.includes(m);
         return (
           <div
@@ -26,8 +29,8 @@ function PossibleMoves({ chessboardRef }) {
               position: "absolute",
               width: SIZE,
               height: SIZE,
-              left: col * SIZE + chessboardRef.offsetLeft,
-              top: row * SIZE + chessboardRef.offsetTop,
+              left: c * SIZE + chessboardRef.offsetLeft,
+              top: r * SIZE + chessboardRef.offsetTop,
               display: "flex",
               justifyContent: "center",
               alignItems: "center",

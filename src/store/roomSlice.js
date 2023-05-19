@@ -16,6 +16,7 @@ const initialState = {
   status: null,
   color: null,
   name: null,
+  isFirstPlayer: null,
 };
 
 export const roomSlice = createSlice({

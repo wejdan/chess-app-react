@@ -13,6 +13,7 @@ import { Message, Icon } from "semantic-ui-react";
 import Loader from "../componenets/Loader";
 import { BallTriangle, Circles } from "react-loader-spinner";
 import { Navigate } from "react-router-dom";
+import { initBoard } from "../utils/boardHelper";
 
 export default function CreateGame() {
   const room = useSelector((state) => state.room);
@@ -60,9 +61,11 @@ export default function CreateGame() {
             name: inputForm.name,
             color: inputForm.team,
             status: "loading",
+            isFirstPlayer: true,
           })
         );
-        dispatch(setGameData({ turn: inputForm.team }));
+        const startBoard = initBoard(inputForm.team);
+        dispatch(setGameData({ turn: inputForm.team, board: startBoard }));
       } catch (error) {
         console.log(error);
       }

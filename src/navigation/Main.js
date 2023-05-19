@@ -11,17 +11,11 @@ import CreateGame from "../pages/CreateGame";
 import JoinGame from "../pages/JoinGame";
 import NoPage from "../pages/NoPage";
 import Login from "../pages/Login";
-import { useDispatch, useSelector } from "react-redux";
-import { off, onValue, ref } from "firebase/database";
-import { database } from "../firebase";
-import { setUsers } from "../store/usersSlice";
-import Game from "../pages/Game";
-import Play from "../pages/Play";
+
 import PlayPage from "../pages/PlayPage";
-import history from "./history";
+import { useSelector } from "react-redux";
 const ProtectedRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
-  console.log("ProtectedRoute", user);
   if (!user) {
     return <Navigate to="/login" replace />;
   }

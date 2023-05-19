@@ -1,6 +1,6 @@
 import React from "react";
 import Piece from "./Piece";
-import { black, HEIGHT, SIZE, white, WIDTH } from "../utils/constants";
+import { black, white } from "../utils/constants";
 const soldires = Array(8)
   .fill()
   .map((v, i) => i);
@@ -13,7 +13,6 @@ function Player({ name, chessboardRef, isTop }) {
           <Piece
             key={i}
             type={p.type}
-            player={p.player}
             name={p.name}
             index={isTop ? i : i + 24}
             chessboardRef={chessboardRef}
@@ -26,7 +25,6 @@ function Player({ name, chessboardRef, isTop }) {
           <Piece
             key={i}
             type="pawn"
-            player={name}
             name={`${name == "black" ? "bp" : "wb"}` + i}
             index={isTop ? 8 + i : i + 16}
             chessboardRef={chessboardRef}

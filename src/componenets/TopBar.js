@@ -1,10 +1,8 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
-import { Context } from "../contexts/Context";
-import { OnlineContext } from "../contexts/OnlineGameContext";
+
 import { WIDTH } from "../utils/constants";
-import IconButton from "./IconButton";
 
 const Wrapper = styled.div`
   display: flex;
@@ -24,9 +22,9 @@ function TopBar() {
 
   return (
     <Wrapper width={WIDTH} style={{ pointerEvents: "none" }}>
-      <div
-        style={{ fontWeight: "bold", fontSize: "20px" }}
-      >{`Turn: ${game.turn} `}</div>
+      <div style={{ fontWeight: "bold", fontSize: "20px" }}>{`Turn: ${
+        game.turn ? game.turn : "..."
+      } `}</div>
 
       <p
         style={{

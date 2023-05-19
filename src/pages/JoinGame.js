@@ -27,7 +27,7 @@ export default function JoinGame() {
     if (inputForm.name && inputForm.roomId) {
       setLoading(true);
       try {
-        const playerColorTwo = await joinRoom(
+        const { color, isFirstPlayer } = await joinRoom(
           inputForm.name,
           inputForm.roomId,
           auth.currentUser.uid
@@ -36,8 +36,9 @@ export default function JoinGame() {
           setRoomData({
             roomID: inputForm.roomId,
             name: inputForm.name,
-            color: playerColorTwo,
+            color: color,
             status: "started",
+            isFirstPlayer: isFirstPlayer,
           })
         );
       } catch (error) {

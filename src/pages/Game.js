@@ -1,39 +1,19 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import Chessborad from "../componenets/Chessborad";
-import Piece from "../componenets/Piece";
 
 import { black, HEIGHT, SIZE, white, WIDTH } from "../utils/constants";
 import PossibleMoves from "../componenets/PossibleMoves";
-import BottomBar from "../componenets/BottomBar";
 import TopBar from "../componenets/TopBar";
 import GameoverModal from "../componenets/GameoverModal";
-import Modal from "../componenets/Modal";
 
 import Promotion from "../componenets/Promotion";
 import { useDispatch, useSelector } from "react-redux";
 import { movePiece, selectPiece, setGameData } from "../store/gameSlice";
 import Player from "../componenets/Player";
-import {
-  child,
-  get,
-  off,
-  onDisconnect,
-  onValue,
-  ref,
-  remove,
-  set,
-} from "firebase/database";
-import { auth, database } from "../firebase";
-import { updateGame } from "../utils/chessOnline";
-import { setUsers } from "../store/usersSlice";
-import { useLocation } from "react-router-dom";
+import { off, onValue, ref } from "firebase/database";
+import { database } from "../firebase";
+import { acceptRematch, updateGame } from "../utils/chessOnline";
 
 const Wrapper = styled.div`
   background-color: #222222;
@@ -67,13 +47,11 @@ const Status = styled.div`
 `;
 
 function Game({
-  playerOne,
-  blackUser,
-  whiteUser,
+  me,
   opponent,
   isOpponentOnline,
-  rematchRequstStatus,
-  isRematchRequsted,
+  isOppenentWantRematch,
+  isWatingOppenentResponse,
 }) {
   const game = useSelector((state) => state.game);
   const room = useSelector((state) => state.room);
@@ -89,7 +67,7 @@ function Game({
 
   useEffect(() => {
     if (!game.turn) {
-      dispatch(setGameData({ turn: playerOne.color }));
+      //dispatch(setGameData({ turn: playerOne.color }));
 
       return;
     } else {
@@ -98,9 +76,10 @@ function Game({
   }, [
     game.turn,
     game.shouldPawnPromote,
+    game.board,
+    game.end,
     room.roomID,
     dispatch,
-    playerOne.color,
   ]);
   useEffect(() => {
     if (!room.roomID) return;
@@ -115,6 +94,19 @@ function Game({
     return () => off(gameRef);
   }, [room, dispatch]);
 
+  // useEffect(() => {
+  //   if (!room.roomID) return;
+  //   const turnRef = ref(database, `rooms/${room.roomID}/firstTurn`);
+
+  //   onValue(turnRef, (snapshot) => {
+  //     //    const data = snapshot.val();
+
+  //     //    dispatch(setGameData(data));
+  //  //   acceptRematch(room.roomID);
+  //   });
+
+  //   return () => off(turnRef);
+  // }, [room, dispatch]);
   const onGrabPiece = (e) => {
     if (e.target.classList.contains("piece") && chessboardRef) {
       const { index, player } = e.target.dataset;
@@ -130,8 +122,8 @@ function Game({
         activePiece.current = e.target;
         activePiece.current.style.zIndex = "100";
       } else {
-        if (!player == room.color) {
-          alert("not your puece");
+        if (player != room.color) {
+          alert("not your piece");
         } else {
           alert("not your turn");
         }
@@ -147,19 +139,26 @@ function Game({
     const newRow = Math.round(
       (e.clientY - chessboardRef.offsetTop - SIZE / 2) / SIZE
     );
+    const r = !room.isFirstPlayer ? 7 - newRow : newRow;
+    const c = !room.isFirstPlayer ? 7 - newCol : newCol;
 
-    if (game.possibleMoves.includes(`${newRow}*${newCol}`)) {
+    if (game.possibleMoves.includes(`${r}*${c}`)) {
       const x = newCol * SIZE + chessboardRef.offsetLeft;
       const y = newRow * SIZE + chessboardRef.offsetTop;
 
       activePiece.current.style.top = `${y}px`;
       activePiece.current.style.left = `${x}px`;
-      handleMovingPiece(newRow, newCol);
+      handleMovingPiece(r, c);
     } else {
-      const x =
-        game.currPiece.pos.split("*")[1] * SIZE + chessboardRef.offsetLeft;
-      const y =
-        game.currPiece.pos.split("*")[0] * SIZE + chessboardRef.offsetTop;
+      const r = !room.isFirstPlayer
+        ? 7 - game.currPiece.pos.split("*")[0]
+        : game.currPiece.pos.split("*")[0];
+      const c = !room.isFirstPlayer
+        ? 7 - game.currPiece.pos.split("*")[1]
+        : game.currPiece.pos.split("*")[1];
+
+      const x = c * SIZE + chessboardRef.offsetLeft;
+      const y = r * SIZE + chessboardRef.offsetTop;
 
       activePiece.current.style.top = `${y}px`;
       activePiece.current.style.left = `${x}px`;
@@ -189,6 +188,7 @@ function Game({
   };
 
   const [chessboardRef, setChessboardRef] = useState();
+
   return (
     <Wrapper
       onMouseMove={onMovePiece}
@@ -196,74 +196,81 @@ function Game({
       onMouseUp={onReleasePiece}
     >
       <TopBar />
-      <div
-        style={{
-          marginTop: 50,
-          display: "flex",
-          flexDirection: "row",
-          maxWidth: "100%",
-          height: 40,
-        }}
-      >
-        {game.board.map((p, i) => {
-          if (p.player == "white" && p.isDeleted) {
-            return <img src={p.img} style={{ width: 40, height: 40 }} />;
-          }
-        })}
-      </div>
-      <div>
-        <NameContainer>
-          {blackUser.name}
-          <Status
-            color={onlineUsers.includes(blackUser.uid) ? "green" : "red"}
+      {game.board && (
+        <>
+          <div
+            style={{
+              marginTop: 50,
+              display: "flex",
+              flexDirection: "row",
+              maxWidth: "100%",
+              height: 40,
+            }}
+          >
+            {game.board.map((p, i) => {
+              if (p.player == me.color && p.isDeleted) {
+                return <img src={p.img} style={{ width: 40, height: 40 }} />;
+              }
+            })}
+          </div>
+          <div>
+            <NameContainer>
+              {opponent.name}
+              <Status
+                color={onlineUsers.includes(opponent.uid) ? "green" : "red"}
+              />
+            </NameContainer>
+
+            <PlayContainer
+              ref={(newRef) => {
+                setChessboardRef(newRef);
+              }}
+              width={WIDTH}
+              height={HEIGHT}
+              style={{ pointerEvents: game.end.isGameEnded ? "none" : "auto" }}
+            >
+              <Chessborad />
+
+              <Player
+                chessboardRef={chessboardRef}
+                name={opponent.color}
+                isTop={true}
+              />
+
+              <Player chessboardRef={chessboardRef} name={me.color} />
+
+              <PossibleMoves chessboardRef={chessboardRef} />
+            </PlayContainer>
+
+            <NameContainer>
+              {me.name}
+              <Status color={onlineUsers.includes(me.uid) ? "green" : "red"} />
+            </NameContainer>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              maxWidth: "100%",
+              height: 40,
+            }}
+          >
+            {game.board.map((p, i) => {
+              if (p.player == opponent.color && p.isDeleted) {
+                return <img src={p.img} style={{ width: 40, height: 40 }} />;
+              }
+            })}
+          </div>
+          <GameoverModal
+            isOppenentWantRematch={isOppenentWantRematch}
+            isWatingOppenentResponse={isWatingOppenentResponse}
+            isOpponentOnline={isOpponentOnline}
+            opponent={opponent}
+            me={me}
           />
-        </NameContainer>
-
-        <PlayContainer
-          ref={(newRef) => {
-            setChessboardRef(newRef);
-          }}
-          width={WIDTH}
-          height={HEIGHT}
-          style={{ pointerEvents: game.end.isGameEnded ? "none" : "auto" }}
-        >
-          <Chessborad />
-
-          <Player chessboardRef={chessboardRef} name={"black"} isTop={true} />
-
-          <Player chessboardRef={chessboardRef} name={"white"} />
-
-          <PossibleMoves chessboardRef={chessboardRef} />
-        </PlayContainer>
-
-        <NameContainer>
-          {whiteUser.name}
-          <Status
-            color={onlineUsers.includes(whiteUser.uid) ? "green" : "red"}
-          />
-        </NameContainer>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          maxWidth: "100%",
-          height: 40,
-        }}
-      >
-        {game.board.map((p, i) => {
-          if (p.player == "black" && p.isDeleted) {
-            return <img src={p.img} style={{ width: 40, height: 40 }} />;
-          }
-        })}
-      </div>
-      <GameoverModal
-        isRematchRequsted={isRematchRequsted}
-        rematchRequstStatus={rematchRequstStatus}
-        isOpponentOnline={isOpponentOnline}
-        opponent={opponent}
-      />
-      {game.shouldPawnPromote && game.turn != room.color && <Promotion />}
+          {game.shouldPawnPromote && game.turn != room.color && <Promotion />}
+        </>
+      )}
     </Wrapper>
   );
 }

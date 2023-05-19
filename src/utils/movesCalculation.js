@@ -1,8 +1,8 @@
-export const pawnAttack = (row, col, player) => {
-  const limit = player == "black" ? row < 7 : row > 0;
+export const pawnAttack = (row, col, isFirstPlayer) => {
+  const limit = !isFirstPlayer ? row < 7 : row > 0;
 
   if (limit) {
-    const newRow = player == "black" ? row + 1 : row - 1;
+    const newRow = !isFirstPlayer ? row + 1 : row - 1;
 
     const left = newRow + "*" + `${col - 1}`;
     const right = newRow + "*" + `${col + 1}`;
@@ -14,7 +14,7 @@ export const pawnAttack = (row, col, player) => {
 export const pawnMoves = (
   row,
   col,
-  player,
+  isFirstPlayer,
   pieces,
   otherPieces,
   isMoved,
@@ -22,11 +22,11 @@ export const pawnMoves = (
 ) => {
   "worklet";
   const tmpArry = [];
-  const limit = player == "black" ? row < 7 : row > 0;
+  const limit = !isFirstPlayer ? row < 7 : row > 0;
 
   if (limit) {
-    const newRow = player == "black" ? row + 1 : row - 1;
-    const secondStep = player == "black" ? row + 2 : row - 2;
+    const newRow = !isFirstPlayer ? row + 1 : row - 1;
+    const secondStep = !isFirstPlayer ? row + 2 : row - 2;
 
     const forward = newRow + "*" + `${col}`;
     const left = newRow + "*" + `${col - 1}`;
@@ -333,7 +333,7 @@ export const calculateNewBoard = (row, col, board, index) => {
       const oldRow = Number(current.pos.split("*")[0]);
       if (Math.abs(row - oldRow) == 2) {
         //  alert("moving 2 steps");
-        const otherRow = current.player == "white" ? oldRow - 1 : oldRow + 1;
+        const otherRow = current.isFirstPlayer ? oldRow - 1 : oldRow + 1;
         newPositions[index] = {
           ...current,
           pos: key,
@@ -504,7 +504,7 @@ export const canAttackTile = (player, board, Tile) => {
           return true;
         }
       } else {
-        const tmpAttacks = pawnAttack(row, col, p.player);
+        const tmpAttacks = pawnAttack(row, col, p.isFirstPlayer);
         if (tmpAttacks.includes(Tile)) {
           return true;
         }
@@ -529,7 +529,7 @@ export const calculateMovs = (r, c, current, board, isCheckingCheckMate) => {
     tmpMovs = pawnMoves(
       row,
       col,
-      current.player,
+      current.isFirstPlayer,
       pieces,
       otherPieces,
       current.moved,

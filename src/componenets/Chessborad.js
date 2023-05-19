@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { HEIGHT, SIZE, WIDTH, width } from "../utils/constants";
+import { SIZE, WIDTH } from "../utils/constants";
 const Wrapper = styled.div``;
 
 const color1 = "#fcfed5";

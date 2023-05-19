@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
-import { HEIGHT, SIZE, WIDTH, width } from "../utils/constants";
+import { SIZE } from "../utils/constants";
 const Wrapper = styled.div`
   position: absolute;
 
@@ -12,20 +12,23 @@ const Wrapper = styled.div`
   background-repeat: no-repeat;
   background-position: center;
 
-  cursor: ${(props) => (props.isMyTurn ? "grabbing" : "no-drop")};
+  cursor: ${(props) => (props.myPiece ? "grabbing" : "no-drop")};
 `;
 
-function Piece({ index, chessboardRef, player }) {
+function Piece({ index, chessboardRef }) {
   const game = useSelector((state) => state.game);
+  const room = useSelector((state) => state.room);
 
   const [opacity, setOpacity] = useState(1);
+  const row = !room.isFirstPlayer
+    ? 7 - game.board[index].pos.split("*")[0]
+    : game.board[index].pos.split("*")[0];
 
-  let x =
-    chessboardRef &&
-    game.board[index].pos.split("*")[1] * SIZE + chessboardRef.offsetLeft;
-  let y =
-    chessboardRef &&
-    game.board[index].pos.split("*")[0] * SIZE + chessboardRef.offsetTop;
+  const col = !room.isFirstPlayer
+    ? 7 - game.board[index].pos.split("*")[1]
+    : game.board[index].pos.split("*")[1];
+  let x = chessboardRef && col * SIZE + chessboardRef.offsetLeft;
+  let y = chessboardRef && row * SIZE + chessboardRef.offsetTop;
   useEffect(() => {}, []);
   useEffect(() => {
     if (game.board[index].isDeleted) {
@@ -38,7 +41,7 @@ function Piece({ index, chessboardRef, player }) {
   return (
     <Wrapper
       data-index={index}
-      data-player={player}
+      data-player={game.board[index].player}
       className="piece"
       style={{
         pointerEvents: opacity == 0 ? "none" : "auto",
@@ -53,7 +56,8 @@ function Piece({ index, chessboardRef, player }) {
       x={x}
       y={y}
       isActive={game.activeIndex == index}
-      isMyTurn={game.turn == player}
+      isMyTurn={game.turn == game.board[index].player}
+      myPiece={room.color == game.board[index].player}
     ></Wrapper>
   );
 }

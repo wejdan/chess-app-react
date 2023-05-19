@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Header, Icon, Modal } from "semantic-ui-react";
-import { Context } from "../contexts/Context";
-import { OnlineContext } from "../contexts/OnlineGameContext";
+import { Header, Modal } from "semantic-ui-react";
+
 import { promotePawnTo } from "../store/gameSlice";
 import { black, SIZE, white } from "../utils/constants";
 function Promotion() {

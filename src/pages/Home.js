@@ -1,40 +1,18 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter,
-  Switch,
-  Route,
-  Routes,
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Divider,
   Grid,
   Header,
   Icon,
-  Search,
   Segment,
 } from "semantic-ui-react";
 import styled from "styled-components";
 import { resetRoom } from "../store/roomSlice";
 import { useDispatch } from "react-redux";
 import { reset } from "../store/gameSlice";
-import { auth, database } from "../firebase";
-import {
-  child,
-  get,
-  off,
-  onChildAdded,
-  onChildMoved,
-  onDisconnect,
-  onValue,
-  push,
-  ref,
-  set,
-} from "firebase/database";
-import { userOn } from "../store/actions/usersActions";
-import { setUsers } from "../store/usersSlice";
+
 const Wrapper = styled.div`
   background-color: #222222;
   width: 100vw;

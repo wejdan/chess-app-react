@@ -69,7 +69,7 @@ for (let row = 0; row < 8; row++) {
 }
 
 const initialState = {
-  board: p,
+  board: null,
   turn: null, //"W" | "B",
   activePlayerStatus: "", //"selecting" | "moving",
   activeIndex: null,
@@ -172,7 +172,7 @@ export const gameSlice = createSlice({
         }
       }
 
-      const isPromoting = state.turn == "black" ? row == 7 : row == 0;
+      const isPromoting = !state.currPiece.isFirstPlayer ? row == 7 : row == 0;
       if (isPromoting && state.currPiece.type == "pawn") {
         state.shouldPawnPromote = true;
       }
@@ -193,6 +193,9 @@ export const gameSlice = createSlice({
       state.board = newPositions;
       state.shouldPawnPromote = false;
     },
+    setBoard: (state, action) => {
+      state.board = action.payload.board;
+    },
     setGameData: (state, action) => {
       if (action.payload) {
         return { ...state, ...action.payload };
@@ -204,7 +207,13 @@ export const gameSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { selectPiece, movePiece, promotePawnTo, reset, setGameData } =
-  gameSlice.actions;
+export const {
+  selectPiece,
+  movePiece,
+  setBoard,
+  promotePawnTo,
+  reset,
+  setGameData,
+} = gameSlice.actions;
 
 export default gameSlice.reducer;
