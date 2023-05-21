@@ -1,11 +1,11 @@
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, signInWithRedirect } from "firebase/auth";
 import React from "react";
 import { useContext } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { auth, provider } from "../firebase";
 import { setUser } from "../store/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
   background-color: #282a37;
@@ -41,16 +41,18 @@ const SignInButton = styled.div`
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
 
   const handleUserLogin = async () => {
     try {
-      const login = await signInWithPopup(auth, provider);
+      const login = await signInWithRedirect(auth, provider);
       const userInfo = {
         name: login.displayName,
         email: login.email,
         avatar: login.photoURL,
         uid: login.uid,
       };
+
       dispatch(setUser({ user: userInfo }));
       navigate("/");
     } catch (error) {
@@ -58,10 +60,13 @@ function Login() {
       const errorMessage = error.message;
       // The email of the user's account used.
       const email = error.customData.email;
+      alert(error);
+
       // The AuthCredential type that was used.
       //const credential = GoogleAuthProvider.credentialFromError(error);
     }
   };
+
   return (
     <Wrapper>
       <SignInContainer>

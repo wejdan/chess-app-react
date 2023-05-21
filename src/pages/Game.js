@@ -14,6 +14,7 @@ import Player from "../componenets/Player";
 import { off, onValue, ref } from "firebase/database";
 import { database } from "../firebase";
 import { acceptRematch, updateGame } from "../utils/chessOnline";
+import OfflineModal from "../componenets/OfflineModal";
 
 const Wrapper = styled.div`
   background-color: #222222;
@@ -52,6 +53,7 @@ function Game({
   isOpponentOnline,
   isOppenentWantRematch,
   isWatingOppenentResponse,
+  isOnline,
 }) {
   const game = useSelector((state) => state.game);
   const room = useSelector((state) => state.room);
@@ -66,9 +68,7 @@ function Game({
   };
 
   useEffect(() => {
-    if (!game.turn) {
-      //dispatch(setGameData({ turn: playerOne.color }));
-
+    if (!game.turn || !isOnline) {
       return;
     } else {
       updateGame(game, room.roomID);
@@ -80,6 +80,7 @@ function Game({
     game.end,
     room.roomID,
     dispatch,
+    isOnline,
   ]);
   useEffect(() => {
     if (!room.roomID) return;
@@ -94,19 +95,6 @@ function Game({
     return () => off(gameRef);
   }, [room, dispatch]);
 
-  // useEffect(() => {
-  //   if (!room.roomID) return;
-  //   const turnRef = ref(database, `rooms/${room.roomID}/firstTurn`);
-
-  //   onValue(turnRef, (snapshot) => {
-  //     //    const data = snapshot.val();
-
-  //     //    dispatch(setGameData(data));
-  //  //   acceptRematch(room.roomID);
-  //   });
-
-  //   return () => off(turnRef);
-  // }, [room, dispatch]);
   const onGrabPiece = (e) => {
     if (e.target.classList.contains("piece") && chessboardRef) {
       const { index, player } = e.target.dataset;
@@ -244,7 +232,11 @@ function Game({
 
             <NameContainer>
               {me.name}
-              <Status color={onlineUsers.includes(me.uid) ? "green" : "red"} />
+              <Status
+                color={
+                  onlineUsers.includes(me.uid) && isOnline ? "green" : "red"
+                }
+              />
             </NameContainer>
           </div>
           <div
@@ -271,6 +263,7 @@ function Game({
           {game.shouldPawnPromote && game.turn != room.color && <Promotion />}
         </>
       )}
+      <OfflineModal isOnline={isOnline} />
     </Wrapper>
   );
 }

@@ -38,6 +38,7 @@ function PlayPage() {
   });
 
   const [isOpponentOnline, setIsOppenetOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
     const connectRef = ref(database, ".info/connected");
@@ -47,8 +48,14 @@ function PlayPage() {
       `rooms/${room.roomID}/USERS_ONLINE/${auth.currentUser.uid}`
     );
     onValue(connectRef, (snapshot) => {
-      onDisconnect(myUserRef).remove();
-      set(myUserRef, true);
+      if (snapshot.val() === true) {
+        onDisconnect(myUserRef).remove();
+        set(myUserRef, true);
+        setIsOnline(true);
+      } else {
+        remove(myUserRef);
+        setIsOnline(false);
+      }
     });
 
     return () => {
@@ -148,6 +155,7 @@ function PlayPage() {
           isOpponentOnline={isOpponentOnline}
           isOppenentWantRematch={isOppenentWantRematch}
           isWatingOppenentResponse={isWatingOppenentResponse}
+          isOnline={isOnline}
         />
       ) : (
         <Navigate to="/" replace />

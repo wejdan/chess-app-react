@@ -12,6 +12,7 @@ import styled from "styled-components";
 import { resetRoom } from "../store/roomSlice";
 import { useDispatch } from "react-redux";
 import { reset } from "../store/gameSlice";
+import OfflineModal from "../componenets/OfflineModal";
 
 const Wrapper = styled.div`
   background-color: #222222;

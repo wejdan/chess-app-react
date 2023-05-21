@@ -42,6 +42,7 @@ export default function CreateGame() {
 
     return () => off(statusRef);
   }, [room, dispatch]);
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     if (inputForm.name && inputForm.team) {
